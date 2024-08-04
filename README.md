@@ -13,14 +13,19 @@ The project is created in 2023 and the API key has probably expired or ran out o
 # How to run
 
 To run the application, you need to have nodejs installed in your device as well as git.
+
 1. Clone the repo
+
 2. Run: npm install
+
 3. Run: npm run dev
 
 ## Technologies used 
 
 - Front-end: Vue, Tailwind
+
 - Back-end: Serverless nodejs, MongoDB
+
 - Deployment: Vercel
 
  
