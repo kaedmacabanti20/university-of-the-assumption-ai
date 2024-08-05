@@ -5,8 +5,8 @@ export default {
   data() {
     return {
       uiData: {}, conversation:[],
-      baseUrl: 'https://ua-ai-llm.vercel.app/',localUrl: 'http://localhost:3000/',
-      initialMessage: `Hello! you can ask me if you have any questions concerning the university`, Name: '', input: '', profileImageSrc: '',
+      baseUrl: 'https://uagpt-private-server.vercel.app/',localUrl: 'http://localhost:3000/',
+      initialMessage: `Hello! You can ask me questions about the university. I can only answer one question per minute because of my current settings.`, Name: '', input: '', profileImageSrc: '',
       isLoading: false, error: null,message: null, messageUser: null,isChatboxHidden: true, showChatMessage: false,
      };
   },
@@ -39,7 +39,6 @@ export default {
     },
     deleteAll() {
         this.saveToLocalStorage();
-        this.saveConversationToServer();
         this.conversation = []; 
         this.initialMessage = ''; 
       },
@@ -52,59 +51,34 @@ export default {
         this.conversation = JSON.parse(storedconversation);
       }
     },
-    saveConversationToServer() {
-        // const userMessages = this.conversation.filter(message => message.role === 'user');
-        const userMessages = this.conversation;
-
-        if (userMessages.length === 0) {
-          console.error('No user messages to save.');
-          return;
-        }
-        
-        axios.post('https://ua-ai-completions.vercel.app/api/post/saveConversation', {
-          id: null,
-          duration: this.conversation.filter(item => item.role === 'user').length, 
-          details: userMessages, 
-        }, {
-          headers: {
-            "Content-Type": "application/json"
-          }
-        })
-        .then(response => {
-          console.log('Conversation data saved on the server:', response.data);
-        })
-        .catch(error => {
-          console.error('Error saving conversation:', error);
-        });
-      },
  
-      async fetchData() {
+    async fetchData() {
       this.isLoading = true;
-      try {
-        this.messageUser = { role: "user", content: this.input};
-        this.conversation.push(this.messageUser);
-        this.saveToLocalStorage();
-        const options = {
-          method: "POST",
-          body: JSON.stringify({
-            messages: this.input
-          }), 
-          headers: {"Content-Type": "application/json"}
-        };
-        const response = await fetch('https://serverless-three-ebon.vercel.app/api/completions', options);
-        // console.log(response);
-        const msg = await response.json();
-        // console.log(msg.msg);
-        const conMessage = msg.msg.choices[0].message;
-        // console.log(conMessage)
-
-        this.message = { role: conMessage.role, content: conMessage.content};
-        this.conversation.push(this.message);
-        this.input = ' ';  
-        this.saveToLocalStorage();
   
-        // console.log(this.conversation);
-        } catch (error) {
+      const options = {
+        method: "POST",
+        body: JSON.stringify({
+          messages: this.input
+        }), 
+        headers: {
+          "Content-Type": "application/json"
+        }
+      };
+      try {
+        const response = await fetch(this.baseUrl+'completions', options);
+        const data = await response.json();
+        const conMessage = data.choices[0].message;
+
+        console.log("Testing")
+
+        this.messageUser = { role: "user", content: this.input};
+        this.message = { role: conMessage.role, content: conMessage.content};
+        this.input = ' '
+        this.conversation.push(this.messageUser, this.message);
+        
+ 
+        console.log(this.conversation) 
+      } catch (error) {
         this.error = 'An error occurred while fetching data.';
       } finally {
         this.isLoading = false;
@@ -114,10 +88,7 @@ export default {
     showChatbox() {this.isChatboxHidden = false;},
     showChatFor5Seconds() {this.showChatMessage = true;setTimeout(() => {this.showChatMessage = false;}, 5000);},
   },
-  created() {
-      this.loadFromLocalStorage();
-      window.addEventListener('beforeunload', this.saveConversationToServer);
-  }
+
 };
 </script>
 
