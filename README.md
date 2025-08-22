@@ -1,4 +1,4 @@
-# University-Custom-Generative-Pre-trained-Transformer-GPT-
+# University of the Assumption AI
 
 ![UA CMS](/public/ua-ai.png)
 
